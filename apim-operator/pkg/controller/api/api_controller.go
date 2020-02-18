@@ -178,7 +178,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 	owner := getOwnerDetails(instance)
 	operatorOwner, ownerErr := getOperatorOwner(r)
 	if ownerErr != nil {
-		reqLogger.Info("Operator was not found in the "+wso2NameSpaceConst+" namespace. No owner will be set for the artifacts")
+		reqLogger.Info("Operator was not found in the " + wso2NameSpaceConst + " namespace. No owner will be set for the artifacts")
 	}
 	userNameSpace := instance.Namespace
 
@@ -472,9 +472,9 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 
 	formattedSwagger := string(prettyJSON.Bytes())
 	//create configmap with modified swagger
-	swaggerConfMap := createConfigMap(instance.Name + "-swagger-mgw", swaggerDataFile, formattedSwagger, userNameSpace, owner)
+	swaggerConfMap := createConfigMap(instance.Name+"-swagger-mgw", swaggerDataFile, formattedSwagger, userNameSpace, owner)
 	log.Info("Creating swagger configmap for mgw")
-	foundConfMap, errgetConf := getConfigmap(r, instance.Name + "-swagger-mgw", userNameSpace)
+	foundConfMap, errgetConf := getConfigmap(r, instance.Name+"-swagger-mgw", userNameSpace)
 	if errgetConf != nil && errors.IsNotFound(errgetConf) {
 		log.Info("swagger-mgw is not found. Hence creating new configmap")
 		errConf := r.client.Create(context.TODO(), swaggerConfMap)
@@ -1155,7 +1155,7 @@ func mgwSwaggerHandler(r *ReconcileAPI, swagger *openapi3.Swagger, mode string, 
 			if err == nil {
 				log.Info("Parsing endpoints and not available root service endpoint")
 				//check if service & targetendpoint cr object are available
-				extractData := strings.Split(endPoint,".")
+				extractData := strings.Split(endPoint, ".")
 				if len(extractData) == 2 {
 					userNameSpace = extractData[1]
 					endPoint = extractData[0]
@@ -1172,14 +1172,14 @@ func mgwSwaggerHandler(r *ReconcileAPI, swagger *openapi3.Swagger, mode string, 
 					currentService := &v1.Service{}
 					err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: userNameSpace,
 						Name: endPoint}, currentService)
-				}else{
+				} else {
 					currentService := &corev1.Service{}
 					err = r.client.Get(context.TODO(), types.NamespacedName{Namespace: userNameSpace,
 						Name: endPoint}, currentService)
 				}
 				if err != nil && errors.IsNotFound(err) && mode != sidecar {
-					log.Error(err,"service not found")
-				}  else if err != nil && mode != sidecar {
+					log.Error(err, "service not found")
+				} else if err != nil && mode != sidecar {
 					log.Error(err, "Error in getting service")
 				} else {
 					protocol := targetEndpointCr.Spec.Protocol
@@ -1608,9 +1608,9 @@ func dockerfileHandler(r *ReconcileAPI, certList map[string]string, existcert bo
 		return nil, err
 	}
 
-	dockerfileConfmap, err := getConfigmap(r, cr.Name + "-" + dockerFile, cr.Namespace)
+	dockerfileConfmap, err := getConfigmap(r, cr.Name+"-"+dockerFile, cr.Namespace)
 	if err != nil && errors.IsNotFound(err) {
-		dockerConf := createConfigMap(cr.Name + "-" + dockerFile, "Dockerfile", builder.String(), cr.Namespace, owner)
+		dockerConf := createConfigMap(cr.Name+"-"+dockerFile, "Dockerfile", builder.String(), cr.Namespace, owner)
 
 		errorMap := r.client.Create(context.TODO(), dockerConf)
 		if errorMap != nil {
@@ -1714,6 +1714,9 @@ func scheduleKanikoJob(cr *wso2v1alpha1.API, imageName string, conf *corev1.Conf
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      cr.Name + "-job",
 					Namespace: cr.Namespace,
+					Annotations: map[string]string{
+						"sidecar.istio.io/inject": "false",
+					},
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
