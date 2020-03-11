@@ -207,7 +207,7 @@ func (r *ReconcileAPI) Reconcile(request reconcile.Request) (reconcile.Result, e
 	}
 	registryType := registry.Type(controlConfigData[registryTypeConst])
 	repositoryName := controlConfigData[repositoryNameConst]
-	operatorMode := controlConfigData[mode]
+	operatorMode := controlConfigData[operatorModeConst]
 
 	reqLogger.Info("Controller Configurations", "mgwToolkitImg", mgwToolkitImg, "mgwRuntimeImg", mgwRuntimeImg,
 		"kanikoImg", kanikoImg, "registryType", registryType, "repositoryName", repositoryName,
